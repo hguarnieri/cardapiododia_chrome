@@ -1,82 +1,83 @@
 /*
 * Henrique Guarnieri
-* 10/10/2014
-* Exibe os card�pios do dia atual do restaurante da FZEA
+* 26/03/2016
+* Exibe os cardápios do restaurante da FZEA
 */
 
 var fzea = {
   /**
-   * URL que armazena os card�pios
+   * URL que armazena os cardápios
    *
    * @type {string}
    * @private
    */
-  url_: 'http://cardapiofzea.tk/cardapio/lista',
+  url_: 'http://www2.comp.ufscar.br/~henrique.guarnieri/cardapiov3/cardapio.txt',
 
   /**
-   * Envia uma solicita��o a URL para obter o JSON dos cardapios
+   * Envia uma solicitação à URL para obter a lista dos cardápios
    *
    * @public
    */
   getCardapio: function() {
     var req = new XMLHttpRequest();
     req.open("GET", this.url_, true);
+    req.overrideMimeType('text/xml; charset=iso-8859-1');
     req.onload = this.showCardapio_;
     req.send(null);
   },
 
   showCardapio_: function (e) {
-    var cardapios = JSON.parse(this.responseText);
+    var days = this.responseText.split("****!\n");
     var data = new Date();
+    var today = data.getDay();
 
-    var dia = String(data.getDate());
-    var mes = String(data.getMonth() + 1);
-    var ano = String(data.getYear() + 1900);
+    var cardapios = [];
 
-    var jantar = null;
-    var almoco = null;
+    for(i = 0; i < days.length; i++) {
+      var items = days[i].split("!\n")
 
-    for(i = 0; i < cardapios.length; i++) {
-      var c = cardapios[i];
-      var cDia = c.data.substr(8, 2);
-      var cMes = c.data.substr(5, 2);
-      var cAno = c.data.substr(0, 4);
-
-      if (dia === cDia && mes === cMes && ano === cAno) {
-        if (c.tipo == "A") {
-          almoco = c;
-        } else if (c.tipo == "J") {
-          jantar = c;
-        }
+      cardapios[i] = [];
+      for (k = 0; k < items.length - 1; k++) {
+          if (items[k] == "-") {
+            cardapios[i][k] = "Não Informado";
+          } else {
+            cardapios[i][k] = items[k];
+          }
       }
     }
 
-    if (data.getDay() == 0 || data.getDay() == 6) {
+    if (today == 0 || today == 6) {
       var tabela = "<table style='text-align: center;'>" +
                    "<thead>" +
-                      "<tr><th colspan=\"2\">Card�pio de Hoje</th></tr>" +
-                      "<tr><th style='width: 50%; font-size: 12px;'>Almo�o</th><th style='width: 50%; font-size: 12px;'>Jantar</th></tr>" + 
+                      "<tr><th colspan=\"2\">Cardápio de Hoje</th></tr>" +
+                      "<tr><th style='width: 50%; font-size: 12px;'>Almoço</th><th style='width: 50%; font-size: 12px;'>Jantar</th></tr>" +
                    "</thead>" +
                    "<tbody>" +
                    "<tr>" +
-                      "<td colspan=\"2\">Em s�bados e domingos n�o s�o servidas refei��es :(</td>" +
+                      "<td colspan=\"2\">Em sábados e domingos não são servidas refeições :(</td>" +
                    "</tr>" +
                    "</tbody>" +
                    "</table>";
     } else {
 
-      var almocoPrincipal = almoco.prato_principal.nome;
-      var almocoGuarnicao = almoco.prato_guarnicao.nome;
-      var almocoSobremesa = almoco.prato_sobremesa.nome;
+      var almocoPrincipal = cardapios[today - 1][0];
+      var almocoSegundaOpcao = cardapios[today - 1][1]
+      var almocoGuarnicao = cardapios[today - 1][2];
+      var almocoSalada = cardapios[today - 1][3];
+      var almocoSobremesa = cardapios[today - 1][4];
+      var almocoSuco = cardapios[today - 1][5];
 
-      var jantarPrincipal = jantar.prato_principal.nome;
-      var jantarGuarnicao = jantar.prato_guarnicao.nome;
-      var jantarSobremesa = jantar.prato_sobremesa.nome;
+      var jantarPrincipal = cardapios[(today - 1) + 5][0];
+      var jantarSegundaOpcao = cardapios[(today - 1) + 5][1]
+      var jantarGuarnicao = cardapios[(today - 1) + 5][2];
+      var jantarSalada = cardapios[(today - 1) + 5][3];
+      var jantarSobremesa = cardapios[(today - 1) + 5][4];
+      var jantarSuco = cardapios[(today - 1) + 5][5];
 
       var tabela = "<table style='text-align: center;'>" +
                    "<thead>" +
-                      "<tr><th colspan=\"2\">Card�pio de Hoje</th></tr>" +
-                      "<tr><th style='width: 50%; font-size: 12px;'>Almo�o</th><th style='width: 50%; font-size: 12px;'>Jantar</th></tr>" + 
+                      "<tr><th colspan=\"2\">Cardápio de Hoje</th></tr>" +
+                      "<tr><th style='width: 50%; font-size: 12px;'>Almoço</th><th style='width: 50%; font-size: 12px;'>Jantar</th></tr>" +
                    "</thead>" +
                    "<tbody>" +
                    "<tr>" +
@@ -84,16 +85,29 @@ var fzea = {
                       "<td>" + jantarPrincipal + "</td>" +
                    "</tr>" +
                    "<tr>" +
+                      "<td>" + almocoSegundaOpcao + "</td>" +
+                      "<td>" + jantarSegundaOpcao + "</td>" +
+                   "</tr>" +
+                   "<tr>" +
                       "<td>" + almocoGuarnicao + "</td>" +
                       "<td>" + jantarGuarnicao + "</td>" +
+                   "</tr>" +
+                   "<tr>" +
+                      "<td>" + almocoSalada + "</td>" +
+                      "<td>" + jantarSalada + "</td>" +
                    "</tr>" +
                    "<tr>" +
                       "<td>" + almocoSobremesa + "</td>" +
                       "<td>" + jantarSobremesa + "</td>" +
                    "</tr>" +
+                   "<tr>" +
+                      "<td>" + almocoSuco + "</td>" +
+                      "<td>" + jantarSuco + "</td>" +
+                   "</tr>" +
                    "</tbody>" +
                    "</table>";
     }
+
     document.getElementById("cardapio").innerHTML = tabela;
 
   },

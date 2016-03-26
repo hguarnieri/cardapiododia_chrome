@@ -3,10 +3,10 @@
 
   "name": "Cardápio FZEA",
   "description": "Procurando algo mais pratico para descobrir o que será seu almoço de hoje? Cardápio do Dia!",
-  "version": "1.0.2",
+  "version": "1.0.4",
 
   "permissions": [
-    "http://cardapiofzea.tk/"
+    "http://www2.comp.ufscar.br/"
   ],
   "browser_action": {
     "default_icon": "icon.png",
